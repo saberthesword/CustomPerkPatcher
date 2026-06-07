@@ -472,6 +472,7 @@ namespace CustomPerkCompiler
 
                     var existingPerkKeys = npcCopy.Perks?.Select(p => p.Perk.FormKey).ToHashSet() ?? new HashSet<FormKey>();
                     bool npcModified = false;
+                    int perksAddedToThisNPC = 0; // Local counter for this specific NPC
 
                     foreach (var kvp in perksToAdd)
                     {
@@ -488,14 +489,25 @@ namespace CustomPerkCompiler
                             npcCopy.Perks.Add(newPerkPlacement);
                             existingPerkKeys.Add(kvp.Key);
                             npcModified = true;
+                            perksAddedToThisNPC++; // Count the perk addition
                         }
                     }
 
-                    if (npcModified) patchedNPCCount++;
-                }
-            }
+                    if (npcModified)
+                    {
+                        patchedNPCCount++;
 
-            Console.WriteLine($"\n[Success] Appended custom duplicated perks to {patchedNPCCount} qualifying NPCs!");
+                        // Safely extract the Name and EditorID strings
+                        string npcEditorID = activeNpc.EditorID ?? "UnknownID";
+                        string npcName = activeNpc.Name?.ToString() ?? "Unknown Name";
+
+                        // Print the real-time granular distribution log
+                        Console.WriteLine($"Distributed {perksAddedToThisNPC} perks to {npcEditorID} ({npcName})");
+                    }
+                }
+
+                Console.WriteLine($"\n[Success] Appended custom duplicated perks to {patchedNPCCount} qualifying NPCs!");
+            }
         }
 
         // ======================================================================
