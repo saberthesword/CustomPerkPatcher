@@ -505,8 +505,6 @@ namespace CustomPerkCompiler
                         Console.WriteLine($"Distributed {perksAddedToThisNPC} perks to {npcEditorID} ({npcName})");
                     }
                 }
-
-                Console.WriteLine($"\n[Success] Appended custom duplicated perks to {patchedNPCCount} qualifying NPCs!");
             }
         }
 
