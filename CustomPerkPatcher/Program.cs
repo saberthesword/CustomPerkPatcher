@@ -849,7 +849,7 @@ namespace CustomPerkCompiler
                 var val = prop.GetValue(npc.PlayerSkills);
                 if (val != null)
                 {
-                    return 15 + Convert.ToInt32(val);
+                    return Convert.ToInt32(val);
                 }
             }
 
@@ -874,7 +874,7 @@ namespace CustomPerkCompiler
                                 var val = valueProp.GetValue(item);
                                 if (val != null)
                                 {
-                                    return 15 + Convert.ToInt32(val);
+                                    return Convert.ToInt32(val);
                                 }
                             }
                         }
