@@ -401,28 +401,9 @@ namespace CustomPerkCompiler
                                 maxWeight = 1;
                             }
 
-                            bool hasSpellProof = false;
-
-                            if (tree.RequiredSpellKeywords != null && tree.RequiredSpellKeywords.Count > 0)
-                            {
-                                if (tree.RequiredSpellKeywords.Any(kw => gatheredSpellKeywords.Contains(kw))) hasSpellProof = true;
-                            }
-
-                            if (tree.PrecompiledSpellIDRegex != null && tree.PrecompiledSpellIDRegex.Count > 0)
-                            {
-                                if (tree.PrecompiledSpellIDRegex.Any(regex => gatheredSpellIDs.Any(id => regex.IsMatch(id)))) hasSpellProof = true;
-                            }
-
                             if (maxWeight == 0 && !matchesHeuristic)
                             {
-                                if (hasSpellProof)
-                                {
-                                    maxWeight = 1;
-                                }
-                                else
-                                {
-                                    qualifiesForTree = false;
-                                }
+                                qualifiesForTree = false;
                             }
 
                             if (qualifiesForTree)
