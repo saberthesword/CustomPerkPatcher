@@ -446,7 +446,7 @@ namespace CustomPerkCompiler
                         if (precompiledPerks.TryGetValue(targetID, out var standalonePerkRecord) && standalonePerkRecord != null)
                         {
                             int skillReq = GetPerkLevelRequirement(customEntry.BasePerk ?? customEntry.EditorID);
-                            bool levelQualifies = false;
+                            bool levelQualifies = estimatedSkillLevel >= skillReq;
 
                             if (skillReq < 25) levelQualifies = npcLevel >= 6;
                             else if (skillReq >= 80) levelQualifies = npcLevel >= 32;
