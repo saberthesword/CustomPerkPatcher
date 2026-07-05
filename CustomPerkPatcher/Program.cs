@@ -58,7 +58,7 @@ namespace CustomPerkCompiler
         public static void RunPatch(IPatcherState<ISkyrimMod, ISkyrimModGetter> state)
         {
             // 1. Resolve Path Safely
-            string configPath = Path.Combine(state.DataFolderPath, "CustomPerksMapping.json");
+            string configPath = Path.Combine(state.DataFolderPath.ToString(), "CustomPerksMapping.json");
 
             if (!File.Exists(configPath))
             {
