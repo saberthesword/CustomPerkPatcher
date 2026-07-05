@@ -151,6 +151,20 @@ namespace CustomPerkCompiler
                         var mutableDuplicatedPerk = state.PatchMod.Perks.DuplicateInAsNewRecord(sourcePerk);
                         mutableDuplicatedPerk.EditorID = "TUS_Custom_" + targetID;
 
+                        // Force Mutagen to map every internal dependency so it doesn't crash during output
+                        foreach (var link in mutableDuplicatedPerk.EnumerateFormLinks())
+                        {
+                            if (link.FormKey != FormKey.Null)
+                            {
+                                var requiredMaster = link.FormKey.ModKey;
+                                if (requiredMaster != state.PatchMod.ModKey &&
+                                    !state.PatchMod.ModHeader.MasterReferences.Any(m => m.Master == requiredMaster))
+                                {
+                                    state.PatchMod.ModHeader.MasterReferences.Add(new MasterReference { Master = requiredMaster });
+                                }
+                            }
+                        }
+
                         originalToDuplicateMap[sourcePerk.FormKey] = mutableDuplicatedPerk;
                         precompiledPerks[targetID] = mutableDuplicatedPerk;
                     }
