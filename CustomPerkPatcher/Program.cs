@@ -58,7 +58,21 @@ namespace CustomPerkCompiler
         public static void RunPatch(IPatcherState<ISkyrimMod, ISkyrimModGetter> state)
         {
             // 1. Resolve Path Safely
-            string configPath = Path.Combine(state.DataFolderPath.ToString(), "CustomPerksMapping.json");
+            // Define both possible locations
+            string mainDataPath = Path.Combine(state.DataFolderPath.ToString(), "CustomPerksMapping.json");
+            string synthesisDataPath = Path.Combine(state.ExtraSettingsDataPath ?? AppContext.BaseDirectory, "CustomPerksMapping.json");
+
+            // Check the Skyrim Data folder first, then fall back to the Synthesis folder
+            string configPath = File.Exists(mainDataPath) ? mainDataPath : synthesisDataPath;
+
+            if (!File.Exists(configPath))
+            {
+                Console.WriteLine($"[Error] Configuration file not found. Checked both:");
+                Console.WriteLine($"1. {mainDataPath}");
+                Console.WriteLine($"2. {synthesisDataPath}");
+                Console.WriteLine("Skipping execution.");
+                return;
+            }
 
             if (!File.Exists(configPath))
             {
