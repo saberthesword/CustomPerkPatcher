@@ -20,6 +20,7 @@ namespace CustomPerkCompiler
     // ======================================================================
     public class CustomTree
     {
+        public string? TreeName { get; set; } // Added to match JSON
         public string? ProxyVanillaSkill { get; set; }
         public List<string>? Factions { get; set; }
         public List<string>? ActorTypeKeywords { get; set; }
@@ -35,6 +36,7 @@ namespace CustomPerkCompiler
     {
         public string? EditorID { get; set; }
         public string? BasePerk { get; set; }
+        public int RequiredLevel { get; set; } // Added to match JSON
     }
 
     public class CustomPerksMapping
@@ -57,22 +59,8 @@ namespace CustomPerkCompiler
 
         public static void RunPatch(IPatcherState<ISkyrimMod, ISkyrimModGetter> state)
         {
-            // 1. Resolve Path Safely
-            // Define both possible locations
-            string mainDataPath = Path.Combine(state.DataFolderPath.ToString(), "CustomPerksMapping.json");
-            string synthesisDataPath = Path.Combine(state.ExtraSettingsDataPath ?? AppContext.BaseDirectory, "CustomPerksMapping.json");
-
-            // Check the Skyrim Data folder first, then fall back to the Synthesis folder
-            string configPath = File.Exists(mainDataPath) ? mainDataPath : synthesisDataPath;
-
-            if (!File.Exists(configPath))
-            {
-                Console.WriteLine($"[Error] Configuration file not found. Checked both:");
-                Console.WriteLine($"1. {mainDataPath}");
-                Console.WriteLine($"2. {synthesisDataPath}");
-                Console.WriteLine("Skipping execution.");
-                return;
-            }
+            // Look directly in the game's Data folder
+            string configPath = Path.Combine(state.DataFolderPath, "CustomPerksMapping.json");
 
             if (!File.Exists(configPath))
             {
@@ -439,7 +427,10 @@ namespace CustomPerkCompiler
 
                         if (precompiledPerks.TryGetValue(targetID, out var standalonePerkRecord) && standalonePerkRecord != null)
                         {
-                            int skillReq = GetPerkLevelRequirement(customEntry.BasePerk ?? customEntry.EditorID);
+                            // Use the JSON's RequiredLevel if it exists; otherwise, fall back to calculating it
+                            int skillReq = customEntry.RequiredLevel > 0
+                                ? customEntry.RequiredLevel
+                                : GetPerkLevelRequirement(customEntry.BasePerk ?? customEntry.EditorID);
                             bool levelQualifies = (estimatedSkillLevel > 15) && (estimatedSkillLevel >= skillReq);
 
                             if (skillReq < 25) levelQualifies = npcLevel >= 6;
