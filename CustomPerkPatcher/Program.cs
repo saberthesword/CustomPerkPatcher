@@ -349,6 +349,7 @@ namespace CustomPerkCompiler
                 var gatheredFactions = GatherAllFactionsInChain(activeNpc, state.LinkCache);
                 var gatheredSpellKeywords = GatherAllSpellKeywordsInChain(activeNpc, state.LinkCache);
                 var gatheredSpellIDs = GatherAllSpellEditorIDsInChain(activeNpc, state.LinkCache);
+                var gatheredSpellSchools = GatherAllSpellSchoolsInChain(activeNpc, state.LinkCache);
                 int npcLevel = ResolveMaxLevelInChain(activeNpc, state.LinkCache);
 
                 foreach (var tree in customPerks.CustomTrees)
@@ -384,6 +385,7 @@ namespace CustomPerkCompiler
                             qualifiesForTree = false;
                     }
 
+                    // --- AUTOMATIC NON-CASTER GUARD CLAUSE ---
                     if (qualifiesForTree && !string.IsNullOrEmpty(tree.ProxyVanillaSkill))
                     {
                         string skillUpper = tree.ProxyVanillaSkill.ToUpper();
@@ -391,10 +393,8 @@ namespace CustomPerkCompiler
 
                         if (magicSchools.Contains(skillUpper))
                         {
-                            string expectedKeyword = "Magic" + tree.ProxyVanillaSkill.Trim(); // e.g., MagicDestruction
-
-                            // If they don't have this magic school keyword anywhere in their known spells, reject them
-                            if (!gatheredSpellKeywords.Contains(expectedKeyword))
+                            // Verify the NPC actually has a spell matching this school's engine enum representation
+                            if (!gatheredSpellSchools.Contains(tree.ProxyVanillaSkill))
                             {
                                 qualifiesForTree = false;
                             }
@@ -707,6 +707,52 @@ namespace CustomPerkCompiler
                 break;
             }
             return ids;
+        }
+
+        private static HashSet<string> GatherAllSpellSchoolsInChain(INpcGetter npc, ILinkCache<ISkyrimMod, ISkyrimModGetter> linkCache)
+        {
+            var schools = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var current = npc;
+            var visited = new HashSet<FormKey>();
+
+            while (current != null)
+            {
+                if (current.ActorEffect != null)
+                {
+                    foreach (var effectLink in current.ActorEffect)
+                    {
+                        if (effectLink.FormKey == FormKey.Null) continue;
+
+                        if (linkCache.TryResolve<ISpellGetter>(effectLink.FormKey, out var spell) && spell?.Effects != null)
+                        {
+                            foreach (var effect in spell.Effects)
+                            {
+                                if (effect.BaseEffect.FormKey == FormKey.Null) continue;
+
+                                if (linkCache.TryResolve<IMagicEffectGetter>(effect.BaseEffect.FormKey, out var mgef))
+                                {
+                                    // FIX: Mutagen uses 'ActorValue' for magic schools, not 'MagicSkill'
+                                    if (mgef.MagicSkill != ActorValue.None)
+                                    {
+                                        schools.Add(mgef.MagicSkill.ToString()!);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (current.Template.FormKey != FormKey.Null && visited.Add(current.Template.FormKey))
+                {
+                    if (linkCache.TryResolve<INpcGetter>(current.Template.FormKey, out var template))
+                    {
+                        current = template;
+                        continue;
+                    }
+                }
+                break;
+            }
+            return schools;
         }
 
         private static int ResolveMaxLevelInChain(INpcGetter npc, ILinkCache<ISkyrimMod, ISkyrimModGetter> linkCache)
