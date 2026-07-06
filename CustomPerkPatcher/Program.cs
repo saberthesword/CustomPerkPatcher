@@ -384,6 +384,23 @@ namespace CustomPerkCompiler
                             qualifiesForTree = false;
                     }
 
+                    if (qualifiesForTree && !string.IsNullOrEmpty(tree.ProxyVanillaSkill))
+                    {
+                        string skillUpper = tree.ProxyVanillaSkill.ToUpper();
+                        var magicSchools = new List<string> { "DESTRUCTION", "CONJURATION", "ALTERATION", "ILLUSION", "RESTORATION" };
+
+                        if (magicSchools.Contains(skillUpper))
+                        {
+                            string expectedKeyword = "Magic" + tree.ProxyVanillaSkill.Trim(); // e.g., MagicDestruction
+
+                            // If they don't have this magic school keyword anywhere in their known spells, reject them
+                            if (!gatheredSpellKeywords.Contains(expectedKeyword))
+                            {
+                                qualifiesForTree = false;
+                            }
+                        }
+                    }
+
                     int estimatedSkillLevel = 0;
 
                     if (qualifiesForTree && !string.IsNullOrEmpty(tree.ProxyVanillaSkill))
